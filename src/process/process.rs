@@ -15,7 +15,7 @@ use winapi::{
         winerror::{ERROR_CALL_NOT_IMPLEMENTED, ERROR_INSUFFICIENT_BUFFER},
     },
     um::{
-        minwinbase::STILL_ACTIVE,
+        minwinbase::{LPTHREAD_START_ROUTINE, STILL_ACTIVE},
         processthreadsapi::{
             CreateRemoteThread, GetCurrentProcess, GetExitCodeProcess, GetExitCodeThread,
             GetProcessId, TerminateProcess,

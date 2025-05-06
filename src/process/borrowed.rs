@@ -63,7 +63,7 @@ impl<'a, 'b> PartialEq<BorrowedProcess<'a>> for BorrowedProcess<'b> {
     fn eq(&self, other: &BorrowedProcess<'a>) -> bool {
         // TODO: (unsafe { CompareObjectHandles(self.handle(), other.handle()) }) != FALSE
 
-        self.as_raw_handle() == other.as_raw_handle()
+        std::ptr::eq(self.as_raw_handle(), other.as_raw_handle())
             || self.pid().map_or(0, |v| v.get()) == other.pid().map_or(0, |v| v.get())
     }
 }

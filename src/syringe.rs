@@ -27,7 +27,7 @@ use crate::{
 #[cfg(all(target_arch = "x86_64", feature = "into-x86-from-x64"))]
 use {
     goblin::pe::PE,
-    std::{convert::TryInto, fs, mem::MaybeUninit, path::PathBuf, time::Duration},
+    std::{convert::TryInto, fs, path::PathBuf, time::Duration},
     widestring::U16Str,
     winapi::{shared::minwindef::MAX_PATH, um::wow64apiset::GetSystemWow64DirectoryW},
 };
@@ -213,8 +213,7 @@ impl Syringe {
         let free_library_result = exit_code as BOOL;
 
         if free_library_result == FALSE {
-            return Err(EjectError::RemoteIo(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(EjectError::RemoteIo(io::Error::other(
                 "failed to eject module from process",
             )));
         }
@@ -227,7 +226,7 @@ impl Syringe {
                 .remote_allocator
                 .process()
                 .module_handles()?
-                .any(|m| m == module.handle()),
+                .any(|m| std::ptr::eq(m, module.handle())),
             "ejected module survived"
         );
 
@@ -363,7 +362,9 @@ impl Syringe {
 
     #[cfg(all(target_arch = "x86_64", feature = "into-x86-from-x64"))]
     fn wow64_dir() -> Result<PathBuf, io::Error> {
-        let mut path_buf = MaybeUninit::uninit_array::<MAX_PATH>();
+        use core::mem::MaybeUninit;
+
+        let mut path_buf = [const { MaybeUninit::uninit() }; MAX_PATH];
         let path_buf_len: u32 = path_buf.len().try_into().unwrap();
         let result = unsafe { GetSystemWow64DirectoryW(path_buf[0].as_mut_ptr(), path_buf_len) };
         if result == 0 {
@@ -371,7 +372,7 @@ impl Syringe {
         }
 
         let path_len = result as usize;
-        let path = unsafe { MaybeUninit::slice_assume_init_ref(&path_buf[..path_len]) };
+        let path = unsafe { path_buf[..path_len].assume_init_ref() };
         Ok(PathBuf::from(U16Str::from_slice(path).to_os_string()))
     }
 }

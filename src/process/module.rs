@@ -368,7 +368,8 @@ impl<P: Process> ProcessModule<P> {
             Err(io::Error::last_os_error())
         } else {
             let module_info = unsafe { module_info.assume_init() };
-            Ok(module_info.BaseAddress == raw_module && module_info.Protect != PAGE_NOACCESS)
+            Ok(std::ptr::eq(module_info.BaseAddress, raw_module)
+                && module_info.Protect != PAGE_NOACCESS)
         }
     }
 }

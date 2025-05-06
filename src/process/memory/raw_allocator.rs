@@ -231,6 +231,13 @@ mod tests {
 
     use super::*;
 
+    struct AlignTestStruct {
+        _a: u8,
+        _b: u16,
+        _c: u32,
+        _d: u64,
+    }
+
     #[test]
     fn single_alloc() {
         let process = BorrowedProcess::current();
@@ -366,12 +373,4 @@ mod tests {
         let alloc = allocator.alloc(page_size + 1).unwrap();
         assert!(alloc.len > page_size);
     }
-}
-
-#[cfg(test)]
-struct AlignTestStruct {
-    _a: u8,
-    _b: u16,
-    _c: u32,
-    _d: u64,
 }
